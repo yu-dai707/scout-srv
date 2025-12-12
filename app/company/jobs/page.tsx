@@ -44,7 +44,6 @@ export default function CompanyJobsPage() {
     setCompanyName(storedCompanyName)
     setCheckingAuth(false)
 
-    // 認証OKになったら求人を取得
     fetchJobs(parsedId)
   }, [])
 
@@ -70,6 +69,32 @@ export default function CompanyJobsPage() {
     }
   }
 
+  const handleDelete = async (jobId: number) => {
+    if (!companyId) return
+
+    const ok = confirm('この求人を削除します。よろしいですか？')
+    if (!ok) return
+
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error ?? '削除に失敗しました')
+        return
+      }
+
+      // 削除成功 → 再取得
+      fetchJobs(companyId)
+    } catch (e) {
+      console.error(e)
+      alert('サーバーエラーが発生しました')
+    }
+  }
+
   const formatDate = (iso: string) => {
     try {
       return new Date(iso).toLocaleDateString('ja-JP')
@@ -88,10 +113,10 @@ export default function CompanyJobsPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center py-10">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 text-black">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6 text-black">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl font-bold mb-1 text-black">
+            <h1 className="text-2xl font-bold mb-1">
               自社の求人一覧
             </h1>
             <p className="text-sm text-slate-600">
@@ -126,7 +151,6 @@ export default function CompanyJobsPage() {
         {!loading && !error && jobs.length === 0 && (
           <p className="text-sm text-slate-600">
             まだ登録された求人はありません。
-            「新規求人を作成」ボタンから求人を登録してください。
           </p>
         )}
 
@@ -169,16 +193,26 @@ export default function CompanyJobsPage() {
                     {job.visaSupport ? 'ビザサポートあり' : 'ビザサポートなし'}
                   </span>
 
-                  <button
-                    className="text-xs text-blue-600 hover:underline"
-                    onClick={() =>
-                      alert(
-                        'ここで「求人詳細ページ」や「編集ページ」に飛ぶように実装していけます。'
-                      )
-                    }
-                  >
-                    詳細 / 編集（仮）
-                  </button>
+                  <div className="flex gap-3">
+                    <Link
+                      href={`/company/jobs/${job.id}`}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      詳細
+                    </Link>
+                    <Link
+                      href={`/company/jobs/${job.id}/edit`}
+                      className="text-xs text-indigo-600 hover:underline"
+                    >
+                      編集
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(job.id)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      削除
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

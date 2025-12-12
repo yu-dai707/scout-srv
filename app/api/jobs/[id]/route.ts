@@ -1,26 +1,57 @@
-// app/api/jobs/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  try {
-    const id = Number(params.id)
-    if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+type Params = {
+  id: string
+}
 
-    const job = await prisma.job.findUnique({ where: { id } })
-    if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+/**
+ * 求人取得（詳細）
+ */
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<Params> }
+) {
+  try {
+    const { id } = await params
+    const jobId = Number(id)
+
+    if (!Number.isInteger(jobId)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+    }
+
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+    })
+
+    if (!job) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
     return NextResponse.json(job)
   } catch (e) {
     console.error('job get error:', e)
-    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'サーバーエラーが発生しました' },
+      { status: 500 }
+    )
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+/**
+ * 求人更新（編集）
+ */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<Params> }
+) {
   try {
-    const id = Number(params.id)
-    if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+    const { id } = await params
+    const jobId = Number(id)
+
+    if (!Number.isInteger(jobId)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+    }
 
     const body = await request.json()
     const {
@@ -33,7 +64,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     } = body
 
     const updated = await prisma.job.update({
-      where: { id },
+      where: { id: jobId },
       data: {
         ...(title !== undefined ? { title } : {}),
         ...(description !== undefined ? { description } : {}),
@@ -47,19 +78,38 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json(updated)
   } catch (e) {
     console.error('job patch error:', e)
-    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'サーバーエラーが発生しました' },
+      { status: 500 }
+    )
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+/**
+ * 求人削除
+ */
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<Params> }
+) {
   try {
-    const id = Number(params.id)
-    if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+    const { id } = await params
+    const jobId = Number(id)
 
-    await prisma.job.delete({ where: { id } })
+    if (!Number.isInteger(jobId)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+    }
+
+    await prisma.job.delete({
+      where: { id: jobId },
+    })
+
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('job delete error:', e)
-    return NextResponse.json({ error: 'サーバーエラーが発生しました' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'サーバーエラーが発生しました' },
+      { status: 500 }
+    )
   }
 }

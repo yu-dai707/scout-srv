@@ -1,7 +1,7 @@
 // app/company/jobs/[id]/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
 type Job = {
@@ -16,27 +16,28 @@ type Job = {
   createdAt: string
 }
 
-export default function CompanyJobDetailPage({ params }: { params: { id: string } }) {
-  const jobId = Number(params.id)
+export default function CompanyJobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  // ✅ Next.js App Router 正式対応
+  const { id } = React.use(params)
+  const jobId = useMemo(() => Number(id), [id])
 
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [companyId, setCompanyId] = useState<number | null>(null)
 
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-
-  // form state
-  const [title, setTitle] = useState('')
-  const [location, setLocation] = useState('')
-  const [requiredLanguage, setRequiredLanguage] = useState('')
-  const [requiredSkills, setRequiredSkills] = useState('')
-  const [description, setDescription] = useState('')
-  const [visaSupport, setVisaSupport] = useState(false)
 
   useEffect(() => {
+    if (Number.isNaN(jobId)) {
+      setError('不正な求人IDです')
+      return
+    }
+
     const token = localStorage.getItem('token')
     const role = localStorage.getItem('userRole')
     const cidStr = localStorage.getItem('companyId')
@@ -57,95 +58,33 @@ export default function CompanyJobDetailPage({ params }: { params: { id: string 
 
     fetchJob(cid)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [jobId])
 
   const fetchJob = async (cid: number) => {
     setLoading(true)
     setError(null)
+
     try {
       const res = await fetch(`/api/jobs/${jobId}`)
       const data = await res.json()
+
       if (!res.ok) {
-        setError(data.error ?? '取得に失敗しました')
+        setError(data.error ?? '求人の取得に失敗しました')
         return
       }
 
-      // 自社求人チェック（超簡易）
+      // 🔒 自社求人チェック（簡易）
       if (data.companyId !== cid) {
         setError('この求人にアクセスする権限がありません')
         return
       }
 
       setJob(data)
-      setTitle(data.title)
-      setLocation(data.location)
-      setRequiredLanguage(data.requiredLanguage)
-      setRequiredSkills(data.requiredSkills)
-      setDescription(data.description)
-      setVisaSupport(!!data.visaSupport)
     } catch (e) {
       console.error(e)
       setError('サーバーエラーが発生しました')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-    setMessage(null)
-
-    try {
-      const res = await fetch(`/api/jobs/${jobId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          location,
-          requiredLanguage,
-          requiredSkills,
-          description,
-          visaSupport,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? '更新に失敗しました')
-        return
-      }
-      setJob(data)
-      setMessage('更新しました！')
-    } catch (e) {
-      console.error(e)
-      setError('サーバーエラーが発生しました')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!confirm('この求人を削除します。よろしいですか？')) return
-    setSaving(true)
-    setError(null)
-    setMessage(null)
-
-    try {
-      const res = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? '削除に失敗しました')
-        return
-      }
-      if (data.ok) {
-        window.location.href = '/company/jobs'
-      }
-    } catch (e) {
-      console.error(e)
-      setError('サーバーエラーが発生しました')
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -158,77 +97,76 @@ export default function CompanyJobDetailPage({ params }: { params: { id: string 
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center py-10">
+    <div className="min-h-screen bg-slate-100 flex justify-center py-10 text-black">
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">求人 詳細 / 編集</h1>
+          <h1 className="text-2xl font-bold">求人詳細</h1>
+
           <div className="flex gap-2">
-            <Link className="px-3 py-2 text-sm border rounded hover:bg-slate-50" href="/company/jobs">
+            <Link
+              className="px-3 py-2 text-sm border rounded hover:bg-slate-50"
+              href="/company/jobs"
+            >
               一覧へ戻る
+            </Link>
+
+            <Link
+              className="px-3 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              href={`/company/jobs/${jobId}/edit`}
+            >
+              編集する
             </Link>
           </div>
         </div>
 
         {loading && <p className="text-sm text-slate-600">読み込み中...</p>}
         {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-        {message && <p className="text-sm text-emerald-700 mb-3">{message}</p>}
 
         {job && !error && (
-          <>
-            <p className="text-xs text-slate-500 mb-4">
-              Job ID: {job.id} / Company ID: {companyId}
-            </p>
+          <div className="space-y-4">
+            <div className="border rounded p-4 bg-slate-50">
+              <p className="text-xs text-slate-500">
+                Job ID: {job.id} / Company ID: {companyId}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                作成日: {new Date(job.createdAt).toLocaleString('ja-JP')}
+              </p>
+            </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block mb-1 text-sm font-medium">求人タイトル</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={title} onChange={(e) => setTitle(e.target.value)} />
-              </div>
+            <div className="border rounded p-4">
+              <h2 className="text-xl font-semibold mb-2">{job.title}</h2>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">勤務地</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={location} onChange={(e) => setLocation(e.target.value)} />
-              </div>
+              <p className="text-sm text-slate-700 mb-2">
+                <span className="font-medium">勤務地：</span>{job.location}
+              </p>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">必要な言語</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={requiredLanguage} onChange={(e) => setRequiredLanguage(e.target.value)} />
-              </div>
+              <p className="text-sm text-slate-700 mb-1">
+                <span className="font-medium">必要な言語：</span>{job.requiredLanguage}
+              </p>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">必要なスキル</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={requiredSkills} onChange={(e) => setRequiredSkills(e.target.value)} />
-              </div>
+              <p className="text-sm text-slate-700 mb-2">
+                <span className="font-medium">必要なスキル：</span>{job.requiredSkills}
+              </p>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">求人の詳細</label>
-                <textarea className="w-full border rounded px-3 py-2 text-sm min-h-[140px]" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
+              <span
+                className={
+                  'inline-block px-2 py-1 text-xs rounded ' +
+                  (job.visaSupport
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-slate-100 text-slate-600')
+                }
+              >
+                {job.visaSupport ? 'ビザサポートあり' : 'ビザサポートなし'}
+              </span>
 
-              <div className="flex items-center gap-2">
-                <input id="visaSupport" type="checkbox" checked={visaSupport} onChange={(e) => setVisaSupport(e.target.checked)} />
-                <label htmlFor="visaSupport" className="text-sm">ビザサポートあり</label>
+              <div className="mt-4">
+                <p className="text-sm font-medium mb-1">求人の詳細</p>
+                <p className="text-sm text-slate-800 whitespace-pre-wrap">
+                  {job.description}
+                </p>
               </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {saving ? '保存中...' : '更新する'}
-                </button>
-                <button
-                  type="button"
-                  disabled={saving}
-                  className="flex-1 bg-red-600 text-white py-2 rounded text-sm hover:bg-red-700 disabled:opacity-50"
-                  onClick={handleDelete}
-                >
-                  削除する
-                </button>
-              </div>
-            </form>
-          </>
+            </div>
+          </div>
         )}
       </div>
     </div>
