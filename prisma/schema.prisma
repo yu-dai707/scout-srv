@@ -19,3 +19,73 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 }
+
+model Candidate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  nationality String          // 国籍
+  language    String          // 日本語レベル / 英語など
+  skills      String          // とりあえずカンマ区切りなど
+  visaStatus  String          // ビザステータス
+  experience  String?         // 職歴・自己PRなど（任意）
+  createdAt   DateTime @default(now())
+
+  applications Application[]
+  scouts       Scout[]
+}
+
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  country   String
+  city      String?
+  website   String?
+  createdAt DateTime @default(now())
+
+  jobs   Job[]
+  scouts Scout[]
+}
+
+model Job {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  location         String
+  requiredLanguage String   // 必要な言語
+  requiredSkills   String   // 必要スキル
+  visaSupport      Boolean  // ビザサポート有無
+  createdAt        DateTime @default(now())
+
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id])
+
+  applications Application[]
+}
+
+model Scout {
+  id          Int      @id @default(autoincrement())
+  message     String
+  createdAt   DateTime @default(now())
+
+  companyId   Int
+  candidateId Int
+
+  company   Company   @relation(fields: [companyId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+}
+
+model Application {
+  id          Int      @id @default(autoincrement())
+  message     String?
+  createdAt   DateTime @default(now())
+
+  jobId       Int
+  candidateId Int
+
+  job       Job       @relation(fields: [jobId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+}
