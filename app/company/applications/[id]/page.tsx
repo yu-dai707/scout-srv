@@ -11,6 +11,21 @@ export default function CompanyApplicationDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [applicationId, setApplicationId] = useState<number | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
+  const statusClasses: Record<string, string> = {
+    UNCONFIRMED: 'bg-gray-200 text-gray-800',
+    DOCUMENT: 'bg-yellow-100 text-yellow-800',
+    FIRST: 'bg-blue-100 text-blue-800',
+    SECOND: 'bg-indigo-100 text-indigo-800',
+    APTITUDE: 'bg-purple-100 text-purple-800',
+    FINAL: 'bg-teal-100 text-teal-800',
+    OFFER: 'bg-green-100 text-green-800',
+    REJECT: 'bg-red-100 text-red-800',
+    PENDING: 'bg-gray-200 text-gray-800',
+    ACCEPTED: 'bg-green-100 text-green-800',
+    REJECTED: 'bg-red-100 text-red-800',
+  }
+  const [toast, setToast] = useState<string | null>(null)
+  const [toastType, setToastType] = useState<'success'|'error'|'info'>('info')
 
   useEffect(() => {
     // URLパラメータからIDを取得
@@ -73,17 +88,28 @@ export default function CompanyApplicationDetailPage() {
       })
 
       if (!res.ok) {
-        throw new Error('ステータス更新に失敗しました')
+        const json = await res.json().catch(() => ({}))
+        throw new Error(json.error ?? 'ステータス更新に失敗しました')
       }
 
       const updatedData = await res.json()
       setData(updatedData)
+      setToast('ステータスを更新しました')
+      setToastType('success')
     } catch (e: any) {
-      alert(e.message ?? 'エラーが発生しました')
+      setToast(e.message ?? 'エラーが発生しました')
+      setToastType('error')
     } finally {
       setUpdatingStatus(false)
     }
   }
+
+  // auto-hide toast
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   if (loading) return <p className="p-6">読み込み中...</p>
   if (error) return (
@@ -170,6 +196,13 @@ export default function CompanyApplicationDetailPage() {
           </div>
           <div>
             <p className="text-sm text-gray-600 font-semibold">ステータス</p>
+            <div className="mt-2 mb-2">
+              {(() => {
+                const s = data?.status || 'UNCONFIRMED'
+                const classes = statusClasses[s] ?? 'bg-slate-200 text-black'
+                return <span className={`px-2 py-1 rounded-full text-sm ${classes}`}>{s}</span>
+              })()}
+            </div>
             <select
               value={data?.status || 'UNCONFIRMED'}
               onChange={(e) => handleStatusChange(e.target.value)}
@@ -186,8 +219,6 @@ export default function CompanyApplicationDetailPage() {
               <option value="REJECT">不合格</option>
               {/* backward compatibility */}
               <option value="PENDING">検討中</option>
-              <option value="ACCEPTED">内定(旧)</option>
-              <option value="REJECTED">不合格(旧)</option>
             </select>
           </div>
           <div>
@@ -196,6 +227,13 @@ export default function CompanyApplicationDetailPage() {
           </div>
         </div>
       </div>
+      {toast && (
+        <div className="fixed right-6 bottom-6 z-50">
+          <div className={`${toastType === 'success' ? 'bg-green-600' : toastType === 'error' ? 'bg-red-600' : 'bg-black'} text-white px-4 py-2 rounded shadow`}>
+            {toast}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

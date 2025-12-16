@@ -16,7 +16,7 @@ type Job = {
 export default function CandidateJobDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const jobId = Number(params.id)
+  const [jobId, setJobId] = useState<number | null>(null)
 
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(false)
@@ -28,6 +28,17 @@ export default function CandidateJobDetailPage() {
       : null
 
   useEffect(() => {
+    const id = params?.id
+    const num = Number(id)
+    if (!id || !Number.isInteger(num)) {
+      // wait until params available or invalid id
+      return
+    }
+    setJobId(num)
+  }, [params])
+
+  useEffect(() => {
+    if (jobId === null) return
     fetch(`/api/jobs/${jobId}`)
       .then((res) => res.json())
       .then((data) => setJob(data))
@@ -37,6 +48,10 @@ export default function CandidateJobDetailPage() {
   const handleApply = async () => {
     if (!candidateId) {
       setError('ログイン情報が取得できません')
+      return
+    }
+    if (jobId === null) {
+      setError('求人情報が不正です')
       return
     }
 
@@ -50,9 +65,9 @@ export default function CandidateJobDetailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          jobId,
-          candidateId: Number(candidateId),
-        }),
+            jobId: Number(jobId),
+            candidateId: Number(candidateId),
+          }),
       })
 
       const data = await res.json()

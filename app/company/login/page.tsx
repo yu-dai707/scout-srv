@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function CompanyLoginPage() {
   const [email, setEmail] = useState('')
@@ -90,6 +91,13 @@ export default function CompanyLoginPage() {
             {loading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
+
+        <p className="text-center text-sm text-slate-600 mt-4">
+          アカウントをお持ちでない方は{' '}
+          <Link href="/company/register" className="text-blue-600 hover:underline font-semibold">
+            新規登録
+          </Link>
+        </p>
       </div>
     </div>
   )

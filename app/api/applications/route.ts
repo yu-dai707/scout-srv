@@ -6,18 +6,28 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { jobId, candidateId, message } = body
 
-    if (!jobId || !candidateId) {
-      return NextResponse.json(
-        { error: 'jobId と candidateId は必須です' },
-        { status: 400 }
-      )
+    const jobIdNum = Number(jobId)
+    const candidateIdNum = Number(candidateId)
+
+    if (!Number.isFinite(jobIdNum) || !Number.isFinite(candidateIdNum)) {
+      return NextResponse.json({ error: 'jobId と candidateId は数値で指定してください' }, { status: 400 })
+    }
+
+    // 存在チェック: 外部キーエラーを避けるため明示的に確認
+    const job = await prisma.job.findUnique({ where: { id: jobIdNum } })
+    if (!job) {
+      return NextResponse.json({ error: '指定された求人が見つかりません' }, { status: 404 })
+    }
+    const candidate = await prisma.candidate.findUnique({ where: { id: candidateIdNum } })
+    if (!candidate) {
+      return NextResponse.json({ error: '指定された求職者が見つかりません' }, { status: 404 })
     }
 
     // すでに応募済みかチェック（二重応募防止）
     const exists = await prisma.application.findFirst({
       where: {
-        jobId: Number(jobId),
-        candidateId: Number(candidateId),
+        jobId: jobIdNum,
+        candidateId: candidateIdNum,
       },
     })
 
@@ -30,8 +40,8 @@ export async function POST(req: Request) {
 
     const application = await prisma.application.create({
       data: {
-        jobId: Number(jobId),
-        candidateId: Number(candidateId),
+        jobId: jobIdNum,
+        candidateId: candidateIdNum,
         message: message ?? null,
       },
     })

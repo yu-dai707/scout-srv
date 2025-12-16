@@ -6,7 +6,7 @@ import { hashPassword } from 'src/lib/auth'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password, nationality, language, skills, visaStatus, experience } = body
+    const { name, email, password, nationality, japaneseLevel, skills, visaStatus } = body
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: '必須項目が足りません' }, { status: 400 })
@@ -25,11 +25,10 @@ export async function POST(request: Request) {
         name,
         email,
         password: passwordHash,
-        nationality: nationality ?? '',
-        language: language ?? '',
-        skills: skills ?? '',
-        visaStatus: visaStatus ?? '',
-        experience: experience ?? '',
+        nationality: nationality ?? null,
+        japaneseLevel: japaneseLevel ?? null,
+        skills: skills ?? null,
+        visaStatus: visaStatus ?? null,
       },
     })
 

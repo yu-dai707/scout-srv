@@ -88,11 +88,25 @@ model Application {
   message   String?
   createdAt DateTime @default(now())
 
-  status String @default("PENDING")
+  status ApplicationStatus @default(PENDING)
 
   jobId       Int
   candidateId Int
 
   job       Job       @relation(fields: [jobId], references: [id])
   candidate Candidate @relation(fields: [candidateId], references: [id])
+}
+
+enum ApplicationStatus {
+  UNCONFIRMED
+  DOCUMENT
+  FIRST
+  SECOND
+  APTITUDE
+  FINAL
+  OFFER
+  REJECT
+  PENDING
+  ACCEPTED
+  REJECTED
 }
