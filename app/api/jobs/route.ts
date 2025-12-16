@@ -1,6 +1,6 @@
 // app/api/jobs/route.ts
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from 'src/lib/prisma'
 
 // 求人作成（企業側）
 export async function POST(request: Request) {

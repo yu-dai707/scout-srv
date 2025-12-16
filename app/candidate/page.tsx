@@ -1,34 +1,26 @@
-// app/candidate/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function CandidateTopPage() {
   const [name, setName] = useState<string | null>(null)
-  const [role, setRole] = useState<string | null>(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
+    const role = localStorage.getItem('userRole')
     const storedName = localStorage.getItem('userName')
-    const storedRole = localStorage.getItem('userRole')
 
-    if (!token || storedRole !== 'candidate') {
+    if (!token || role !== 'candidate') {
       window.location.href = '/candidate/login'
       return
     }
 
     setName(storedName)
-    setRole(storedRole)
     setCheckingAuth(false)
   }, [])
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('userName')
-    window.location.href = '/candidate/login'
-  }
 
   if (checkingAuth) {
     return (
@@ -39,48 +31,35 @@ export default function CandidateTopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-2xl">
-        <h1 className="text-2xl font-bold mb-2 text-black">
-          求職者トップページ
-        </h1>
-        <p className="mb-4 text-sm text-slate-700">
-          ようこそ、{name ?? 'ゲスト'} さん（ロール: {role}）
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center text-black">
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-1">求職者トップ</h1>
+        <p className="text-sm text-slate-700 mb-6">
+          ようこそ、{name ?? 'ゲスト'} さん
         </p>
 
-        <div className="grid gap-3 md:grid-cols-2 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <button
-            className="w-full bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700"
-            onClick={() => alert('ここに「プロフィール編集ページ」への遷移を実装していく')}
+            onClick={() => router.push('/candidate/profile')}
+            className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700"
           >
-            プロフィールを編集
+            プロフィール
           </button>
 
           <button
-            className="w-full bg-emerald-600 text-white py-2 rounded text-sm hover:bg-emerald-700"
-            onClick={() => alert('ここに「マッチした求人一覧」画面への遷移を実装していく')}
+            onClick={() => router.push('/candidate/jobs')}
+            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
           >
-            マッチしている求人を見る
-          </button>
-
-          <button
-            className="w-full bg-indigo-600 text-white py-2 rounded text-sm hover:bg-indigo-700"
-            onClick={() => alert('ここに「すべての求人一覧」画面への遷移を実装していく')}
-          >
-            求人一覧を見る
-          </button>
-
-          <button
-            className="w-full bg-teal-600 text-white py-2 rounded text-sm hover:bg-teal-700"
-            onClick={() => alert('ここに「スカウト一覧」画面への遷移を実装していく')}
-          >
-            スカウトを確認する
+            求人一覧
           </button>
         </div>
 
         <button
-          className="w-full bg-slate-500 text-white py-2 rounded text-sm hover:bg-slate-600"
-          onClick={handleLogout}
+          onClick={() => {
+            localStorage.clear()
+            window.location.href = '/candidate/login'
+          }}
+          className="w-full bg-slate-500 text-white py-2 rounded hover:bg-slate-600"
         >
           ログアウト
         </button>

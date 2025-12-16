@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "postgresql"
-  // ここに url は書かない（消してOK）
+  // url は環境変数から読む想定
 }
 
 generator client {
@@ -21,16 +15,27 @@ model User {
 }
 
 model Candidate {
-  id          Int      @id @default(autoincrement())
-  name        String
-  email       String   @unique
-  password    String
-  nationality String          // 国籍
-  language    String          // 日本語レベル / 英語など
-  skills      String          // とりあえずカンマ区切りなど
-  visaStatus  String          // ビザステータス
-  experience  String?         // 職歴・自己PRなど（任意）
-  createdAt   DateTime @default(now())
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  // ===== プロフィール情報（表示/登録できる） =====
+  nationality           String? // 国籍
+  japaneseLevel         String? // 日本語レベル（N1〜N5）
+  skills                String? // スキル（カンマ区切りなど）
+  visaStatus            String? // VISAステータス
+
+  currentJobType        String? // 現在の職種（特定技能など）
+  skillTest             String? // 職能試験
+  unionName             String? // 所属組合
+  registeredOrg         String? // 所属登録機関
+
+  selfPr                String? // 自己PR（文章）
+  introVideoUrl         String? // 自己紹介動画（URL）
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   applications Application[]
   scouts       Scout[]
@@ -55,9 +60,9 @@ model Job {
   title            String
   description      String
   location         String
-  requiredLanguage String   // 必要な言語
-  requiredSkills   String   // 必要スキル
-  visaSupport      Boolean  // ビザサポート有無
+  requiredLanguage String
+  requiredSkills   String
+  visaSupport      Boolean
   createdAt        DateTime @default(now())
 
   companyId Int
@@ -67,9 +72,9 @@ model Job {
 }
 
 model Scout {
-  id          Int      @id @default(autoincrement())
-  message     String
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  message   String
+  createdAt DateTime @default(now())
 
   companyId   Int
   candidateId Int
@@ -79,9 +84,11 @@ model Scout {
 }
 
 model Application {
-  id          Int      @id @default(autoincrement())
-  message     String?
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  message   String?
+  createdAt DateTime @default(now())
+
+  status String @default("PENDING")
 
   jobId       Int
   candidateId Int

@@ -3,10 +3,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "*"
       ]
     },
-    // 以下は create-next-app で最初から入っている部分
     "target": "ES6",
     "lib": [
       "dom",

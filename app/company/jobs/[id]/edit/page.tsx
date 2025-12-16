@@ -4,6 +4,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Modal from 'src/components/modal'
+
 
 type Job = {
   id: number
@@ -21,7 +23,7 @@ export default function CompanyJobEditPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  // ✅ App Router（params は Promise）
+  // App Router（params は Promise）
   const { id } = React.use(params)
   const jobId = useMemo(() => Number(id), [id])
 
@@ -41,6 +43,9 @@ export default function CompanyJobEditPage({
   const [requiredLanguage, setRequiredLanguage] = useState('')
   const [requiredSkills, setRequiredSkills] = useState('')
   const [visaSupport, setVisaSupport] = useState(false)
+
+  // モーダル制御
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   useEffect(() => {
     if (!Number.isInteger(jobId)) {
@@ -134,8 +139,8 @@ export default function CompanyJobEditPage({
         return
       }
 
-      alert('求人を更新しました')
-      router.push(`/company/jobs/${jobId}`)
+      // ✅ alert は使わない
+      setShowSuccessModal(true)
     } catch (e) {
       console.error(e)
       setError('サーバーエラーが発生しました')
@@ -231,6 +236,19 @@ export default function CompanyJobEditPage({
           </form>
         )}
       </div>
+
+      {/* ✅ 更新完了モーダル */}
+      <Modal
+        open={showSuccessModal}
+        title="更新完了"
+        message="求人情報を更新しました。"
+        confirmText="OK"
+        onConfirm={() => {
+          setShowSuccessModal(false)
+          router.push(`/company/jobs/${jobId}`)
+        }}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   )
 }

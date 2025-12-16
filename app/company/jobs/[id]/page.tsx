@@ -3,6 +3,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import Modal from 'src/components/modal'
+
 
 type Job = {
   id: number
@@ -21,9 +24,11 @@ export default function CompanyJobDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  // ✅ Next.js App Router 正式対応
+  // App Router（params は Promise）
   const { id } = React.use(params)
   const jobId = useMemo(() => Number(id), [id])
+
+  const router = useRouter()
 
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [companyId, setCompanyId] = useState<number | null>(null)
@@ -32,8 +37,11 @@ export default function CompanyJobDetailPage({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // モーダル制御
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
   useEffect(() => {
-    if (Number.isNaN(jobId)) {
+    if (!Number.isInteger(jobId)) {
       setError('不正な求人IDです')
       return
     }
@@ -48,7 +56,7 @@ export default function CompanyJobDetailPage({
     }
 
     const cid = Number(cidStr)
-    if (Number.isNaN(cid)) {
+    if (!Number.isInteger(cid)) {
       window.location.href = '/company/login'
       return
     }
@@ -73,7 +81,7 @@ export default function CompanyJobDetailPage({
         return
       }
 
-      // 🔒 自社求人チェック（簡易）
+      // 自社求人チェック
       if (data.companyId !== cid) {
         setError('この求人にアクセスする権限がありません')
         return
@@ -85,6 +93,32 @@ export default function CompanyJobDetailPage({
       setError('サーバーエラーが発生しました')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error ?? '削除に失敗しました')
+        return
+      }
+
+      router.push('/company/jobs')
+    } catch (e) {
+      console.error(e)
+      setError('サーバーエラーが発生しました')
+    } finally {
+      setLoading(false)
+      setShowDeleteModal(false)
     }
   }
 
@@ -116,10 +150,17 @@ export default function CompanyJobDetailPage({
             >
               編集する
             </Link>
+
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              削除
+            </button>
           </div>
         </div>
 
-        {loading && <p className="text-sm text-slate-600">読み込み中...</p>}
+        {loading && <p className="text-sm text-slate-600">処理中...</p>}
         {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
         {job && !error && (
@@ -169,6 +210,18 @@ export default function CompanyJobDetailPage({
           </div>
         )}
       </div>
+
+      {/* 削除確認モーダル */}
+      <Modal
+        open={showDeleteModal}
+        title="削除確認"
+        message="この求人を削除しますか？\nこの操作は取り消せません。"
+        confirmText="削除する"
+        cancelText="キャンセル"
+        danger
+        onConfirm={handleDelete}
+        onClose={() => setShowDeleteModal(false)}
+      />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 // app/api/auth/company/login/route.ts
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { comparePassword, generateToken } from '@/lib/auth'
+import { prisma } from 'src/lib/prisma'
+import { comparePassword, generateToken } from 'src/lib/auth'
 
 export async function POST(request: Request) {
   try {

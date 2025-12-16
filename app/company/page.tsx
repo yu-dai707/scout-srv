@@ -1,4 +1,3 @@
-// app/company/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -43,7 +42,9 @@ export default function CompanyTopPage() {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-2xl text-black">
         <h1 className="text-2xl font-bold mb-2">企業トップページ</h1>
-        <p className="mb-5 text-sm text-slate-700">ようこそ、{companyName ?? '企業様'} さん</p>
+        <p className="mb-5 text-sm text-slate-700">
+          ようこそ、{companyName ?? '企業様'} さん
+        </p>
 
         <div className="grid gap-3 md:grid-cols-2 mb-6">
           <Link
@@ -60,11 +61,12 @@ export default function CompanyTopPage() {
             自社の求人一覧
           </Link>
 
+          {/* ★ 応募者一覧を追加 */}
           <Link
             className="w-full text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 text-sm"
-            href="/company/candidates"
+            href="/company/applications"
           >
-            求職者を検索する
+            応募者一覧
           </Link>
 
           <Link
