@@ -3,9 +3,10 @@ import { prisma } from 'src/lib/prisma'
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const applicationId = Number(params.id)
+  const resolvedParams = await params
+  const applicationId = Number(resolvedParams.id)
 
   if (!Number.isFinite(applicationId)) {
     return NextResponse.json(

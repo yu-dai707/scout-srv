@@ -6,6 +6,7 @@ import Link from 'next/link'
 type Application = {
   id: number
   createdAt: string
+  status?: string
   job: {
     id: number
     title: string
@@ -22,6 +23,21 @@ export default function CompanyApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const statusLabels: Record<string, string> = {
+    UNCONFIRMED: '未確認',
+    DOCUMENT: '書類選考',
+    FIRST: '一次面接',
+    SECOND: '二次面接',
+    APTITUDE: '適性検査',
+    FINAL: '最終面接',
+    OFFER: '内定',
+    REJECT: '不合格',
+    // compatibility
+    PENDING: '未確認',
+    ACCEPTED: '内定',
+    REJECTED: '不合格',
+  }
 
   useEffect(() => {
     const companyId = localStorage.getItem('companyId')
@@ -65,21 +81,24 @@ export default function CompanyApplicationsPage() {
             <div>
               <p className="font-medium">{app.candidate.name}</p>
               <p className="text-sm text-slate-600">{app.candidate.email}</p>
-              <p className="text-sm text-slate-600">
-                国籍：{app.candidate.nationality}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                応募求人：{app.job.title}
-              </p>
+              <p className="text-sm text-slate-600">国籍：{app.candidate.nationality}</p>
+              <p className="text-xs text-slate-500 mt-1">応募求人：{app.job.title}</p>
             </div>
 
-            {/* ★ ここが最重要 */}
-            <Link
-              href={`/company/applications/${app.id}`}
-              className="text-sm text-indigo-600 hover:underline"
-            >
-              詳細を見る →
-            </Link>
+            <div className="flex items-center gap-6">
+              <div>
+                <span className="text-xs text-slate-500">ステータス</span>
+                <div className="mt-1">
+                  <span className="px-2 py-1 rounded-full text-sm bg-slate-200 text-black">
+                    {statusLabels[app.status as unknown as string] ?? app.status ?? '-'}
+                  </span>
+                </div>
+              </div>
+
+              <Link href={`/company/applications/${app.id}`} className="text-sm text-indigo-600 hover:underline">
+                詳細を見る →
+              </Link>
+            </div>
           </div>
         ))}
       </div>
