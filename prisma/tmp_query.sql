@@ -1,0 +1,1 @@
+SELECT id, name, email, "createdAt" FROM "Candidate" ORDER BY id DESC LIMIT 10;

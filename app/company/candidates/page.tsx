@@ -19,7 +19,7 @@ export default function CompanyCandidatesPage() {
 
   const [q, setQ] = useState('')
   const [nationality, setNationality] = useState('')
-  const [language, setLanguage] = useState('')
+  const [japaneseLevel, setJapaneseLevel] = useState('')
   const [skills, setSkills] = useState('')
   const [visaStatus, setVisaStatus] = useState('')
 
@@ -47,7 +47,7 @@ export default function CompanyCandidatesPage() {
       const params = new URLSearchParams()
       if (q.trim()) params.set('q', q.trim())
       if (nationality.trim()) params.set('nationality', nationality.trim())
-      if (language.trim()) params.set('language', language.trim())
+      if (japaneseLevel.trim()) params.set('japaneseLevel', japaneseLevel.trim())
       if (skills.trim()) params.set('skills', skills.trim())
       if (visaStatus.trim()) params.set('visaStatus', visaStatus.trim())
 
@@ -87,9 +87,26 @@ export default function CompanyCandidatesPage() {
         <div className="grid gap-2 md:grid-cols-5 mb-3 ">
           <input className="border rounded px-3 py-2 text-sm" placeholder="キーワード" value={q} onChange={(e) => setQ(e.target.value)} />
           <input className="border rounded px-3 py-2 text-sm" placeholder="国籍" value={nationality} onChange={(e) => setNationality(e.target.value)} />
-          <input className="border rounded px-3 py-2 text-sm" placeholder="言語" value={language} onChange={(e) => setLanguage(e.target.value)} />
+          
+          <select className="border rounded px-3 py-2 text-sm" value={japaneseLevel} onChange={(e) => setJapaneseLevel(e.target.value)}>
+            <option value="">日本語レベル</option>
+            <option value="N1">N1</option>
+            <option value="N2">N2</option>
+            <option value="N3">N3</option>
+            <option value="N4">N4</option>
+            <option value="N5">N5</option>
+          </select>
+          
           <input className="border rounded px-3 py-2 text-sm" placeholder="スキル" value={skills} onChange={(e) => setSkills(e.target.value)} />
-          <input className="border rounded px-3 py-2 text-sm" placeholder="ビザ" value={visaStatus} onChange={(e) => setVisaStatus(e.target.value)} />
+          
+          <select className="border rounded px-3 py-2 text-sm" value={visaStatus} onChange={(e) => setVisaStatus(e.target.value)}>
+            <option value="">ビザ</option>
+            <option value="特定技能性">特定技能性</option>
+            <option value="高度専門職">高度専門職</option>
+            <option value="技術・人文知識・国際業務">技術・人文知識・国際業務</option>
+            <option value="永住者">永住者</option>
+            <option value="定住者">定住者</option>
+          </select>
         </div>
 
         <div className="flex gap-2 mb-5">
@@ -101,7 +118,7 @@ export default function CompanyCandidatesPage() {
             onClick={() => {
               setQ('')
               setNationality('')
-              setLanguage('')
+              setJapaneseLevel('')
               setSkills('')
               setVisaStatus('')
             }}
@@ -125,7 +142,7 @@ export default function CompanyCandidatesPage() {
                 <span className="text-xs text-slate-500">ID: {c.id}</span>
               </div>
               <p className="text-xs text-slate-700 mt-1">国籍: {c.nationality} / ビザ: {c.visaStatus}</p>
-              <p className="text-xs text-slate-700 mt-1">言語: {c.language}</p>
+              <p className="text-xs text-slate-700 mt-1">日本語レベル: {c.japaneseLevel}</p>
               <p className="text-xs text-slate-700 mt-1">スキル: {c.skills}</p>
             </Link>
           ))}

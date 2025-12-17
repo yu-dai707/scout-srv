@@ -51,6 +51,48 @@ model Company {
   website   String?
   createdAt DateTime @default(now())
 
+  // ===== 企業プロフィール =====
+  companyLogo          String?   // ロゴURL
+  overview             String?   // 会社概要（300-500文字）
+  foundedYear          Int?      // 設立年月（年のみ）
+  capital              String?   // 資本金
+  employees            Int?      // 従業員数
+  representative       String?   // 代表者名
+  headquarters         String?   // 本社所在地
+
+  // ===== 募集・雇用情報 =====
+  recruitmentTypes     String?   // 募集職種（カンマ区切り）
+  recruitmentTarget    String?   // 募集対象（新卒/中途/外国人可など）
+  employmentType       String?   // 雇用形態（正社員・契約社員など）
+  workLocation         String?   // 勤務地（都道府県/リモート可否）
+  workingHours         String?   // 勤務時間・休日
+  initialSalary        String?   // 初任給（目安）
+  annualSalary         String?   // 想定年収レンジ
+  bonusInfo            String?   // 昇給・賞与（回数・実績）
+
+  // ===== 福利厚生 =====
+  benefits             String?   // 福利厚生全般
+  socialInsurance      String?   // 社会保険
+  housingAllowance     String?   // 住宅手当
+  transportationAllowance String? // 交通費
+  training             String?   // 研修制度
+  certificateSupport   String?   // 資格支援
+
+  // ===== 職場環境・ワークライフバランス =====
+  avgAge               String?   // 平均年齢
+  genderRatio          String?   // 男女比
+  overtimeHours        String?   // 残業時間の目安
+  vacationRate         String?   // 有給取得率
+  remoteFlexible       String?   // リモート／フレックス有無
+
+  // ===== 外国人採用・VISA対応 =====
+  foreignerHiringRecord String?  // 外国人採用実績（あり/なし）
+  visaSupport          String?   // VISAサポート（可/不可/条件付き）
+  internalLanguage     String?   // 社内公用語（日本語/英語）
+  japaneseLevel        String?   // 日本語レベルの目安（N2以上など）
+  acceptedNationality  String?   // 受け入れ国籍（制限あれば）
+  livingSupport        String?   // 生活サポート（住居/手続き支援）
+
   jobs   Job[]
   scouts Scout[]
 }

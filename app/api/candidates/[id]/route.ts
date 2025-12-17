@@ -2,9 +2,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from 'src/lib/prisma'
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = Number(params.id)
+    const { id: idStr } = await params
+    const id = Number(idStr)
     if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
     const candidate = await prisma.candidate.findUnique({
@@ -12,11 +13,13 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       select: {
         id: true,
         name: true,
+        email: true,
         nationality: true,
-        language: true,
+        japaneseLevel: true,
         skills: true,
         visaStatus: true,
-        experience: true,
+        selfPr: true,
+        introVideoUrl: true,
         createdAt: true,
       },
     })

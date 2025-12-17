@@ -30,17 +30,25 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const companyId = searchParams.get('companyId')
+    const candidateId = searchParams.get('candidateId')
 
-    if (!companyId) {
-      return NextResponse.json({ error: 'companyId is required' }, { status: 400 })
+    if (!companyId && !candidateId) {
+      return NextResponse.json({ error: 'companyId or candidateId is required' }, { status: 400 })
     }
 
+    const where: any = {}
+    if (companyId) where.companyId = Number(companyId)
+    if (candidateId) where.candidateId = Number(candidateId)
+
     const items = await prisma.scout.findMany({
-      where: { companyId: Number(companyId) },
+      where,
       orderBy: { createdAt: 'desc' },
       include: {
         candidate: {
-          select: { id: true, name: true, nationality: true, language: true, skills: true, visaStatus: true },
+          select: { id: true, name: true, nationality: true, japaneseLevel: true, skills: true, visaStatus: true },
+        },
+        company: {
+          select: { id: true, name: true },
         },
       },
     })

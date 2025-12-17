@@ -1,7 +1,7 @@
 'use client'
 
 type ModalProps = {
-  open: boolean
+  open?: boolean
   title: string
   message: string
   confirmText?: string
@@ -12,7 +12,7 @@ type ModalProps = {
 }
 
 export default function Modal({
-  open,
+  open = true,
   title,
   message,
   confirmText = 'OK',
@@ -24,20 +24,25 @@ export default function Modal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300" 
+        onClick={onClose} 
+      />
 
-      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-3 text-lg font-bold">{title}</h2>
+      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl transform transition-all">
+        <div className="mb-2">
+          <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+        </div>
 
-        <p className="mb-6 whitespace-pre-wrap text-sm text-slate-700">
+        <p className="mb-8 whitespace-pre-wrap text-slate-600 leading-relaxed">
           {message}
         </p>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="rounded border px-4 py-2 text-sm hover:bg-slate-50"
+            className="px-6 py-2.5 text-sm font-medium text-slate-700 rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
           >
             {cancelText}
           </button>
@@ -45,8 +50,10 @@ export default function Modal({
           {onConfirm && (
             <button
               onClick={onConfirm}
-              className={`rounded px-4 py-2 text-sm text-white ${
-                danger ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'
+              className={`px-6 py-2.5 text-sm font-medium text-white rounded-lg transition-all ${
+                danger 
+                  ? 'bg-gradient-to-r from-red-600 to-red-700 hover:shadow-lg hover:scale-105' 
+                  : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:shadow-lg hover:scale-105'
               }`}
             >
               {confirmText}

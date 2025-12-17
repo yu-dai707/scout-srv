@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Modal from 'src/components/modal'
 
 const JP_LEVELS = ['N1', 'N2', 'N3', 'N4', 'N5'] as const
+const VISA_STATUSES = ['特定技能性', '高度専門職', '技術・人文知識・国際業務', '永住者', '定住者'] as const
 
 export default function CandidateProfileEditPage() {
   const router = useRouter()
@@ -23,7 +24,7 @@ export default function CandidateProfileEditPage() {
   const [japaneseLevel, setJapaneseLevel] =
     useState<(typeof JP_LEVELS)[number]>('N3')
   const [skills, setSkills] = useState('')
-  const [visaStatus, setVisaStatus] = useState('')
+  const [visaStatus, setVisaStatus] = useState<(typeof VISA_STATUSES)[number] | ''>('')
   const [currentJobType, setCurrentJobType] = useState('')
   const [skillTest, setSkillTest] = useState('')
   const [unionName, setUnionName] = useState('')
@@ -174,7 +175,25 @@ export default function CandidateProfileEditPage() {
           </div>
 
           <Input label="スキル" value={skills} onChange={setSkills} />
-          <Input label="VISAステータス" value={visaStatus} onChange={setVisaStatus} />
+          
+          <div>
+            <label className="text-xs text-slate-600">VISAステータス</label>
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={visaStatus}
+              onChange={(e) =>
+                setVisaStatus(e.target.value as (typeof VISA_STATUSES)[number] | '')
+              }
+            >
+              <option value="">選択してください</option>
+              {VISA_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           <Input
             label="現在の職種（特定技能など）"
             value={currentJobType}
